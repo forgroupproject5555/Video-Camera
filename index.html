@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Sergeant Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- Header -->
+  <header class="bg-blue-600 text-white p-6 shadow-md">
+    <h1 class="text-3xl font-bold text-center">Study Sergeant Dashboard</h1>
+  </header>
+
+  <!-- Main container -->
+  <main class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Camera & Study Controls -->
+    <section class="bg-white p-6 rounded-lg shadow">
+      <h2 class="text-xl font-semibold mb-4">Live Camera</h2>
+      <video id="cameraFeed" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
+      <div class="mt-4 flex gap-4">
+        <button id="startSession" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Start Study Session</button>
+        <button id="stopSession" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Stop Session</button>
+      </div>
+    </section>
+
+    <!-- Photon Control Panel -->
+    <section class="bg-white p-6 rounded-lg shadow">
+      <h2 class="text-xl font-semibold mb-4">Photon Feedback</h2>
+      <p class="mb-2 text-gray-700">Send a command to the Photon:</p>
+      <div class="flex gap-4 mb-4">
+        <button onclick="sendPhotonCommand('encourage')" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Encourage</button>
+        <button onclick="sendPhotonCommand('scold')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Scold</button>
+        <button onclick="sendPhotonCommand('neutral')" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Neutral</button>
+      </div>
+
+      <h2 class="text-xl font-semibold mb-4">Session Stats</h2>
+      <ul id="sessionStats" class="text-gray-700">
+        <li>Time Focused: 0 min</li>
+        <li>Time Distracted: 0 min</li>
+        <li>Encouragements Sent: 0</li>
+        <li>Scolds Sent: 0</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-200 text-gray-700 p-4 text-center">
+    © 2025 Study Sergeant
+  </footer>
+
+  <!-- JavaScript: Camera & Button Logic -->
+  <script>
+    const video = document.getElementById('cameraFeed');
+    const startBtn = document.getElementById('startSession');
+    const stopBtn = document.getElementById('stopSession');
+
+    let stream;
+
+    // Start camera
+    startBtn.addEventListener('click', async () => {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      video.srcObject = stream;
+      console.log("Study session started.");
+    });
+
+    // Stop camera
+    stopBtn.addEventListener('click', () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      video.srcObject = null;
+      console.log("Study session stopped.");
+    });
+
+    // Photon command (manual buttons)
+    function sendPhotonCommand(command) {
+      console.log(`Photon command executed: ${command}`);
+      const statsList = document.getElementById('sessionStats');
+
+      if (command === 'encourage') {
+        statsList.children[2].textContent = `Encouragements Sent: ${parseInt(statsList.children[2].textContent.split(': ')[1]) + 1}`;
+      } else if (command === 'scold') {
+        statsList.children[3].textContent = `Scolds Sent: ${parseInt(statsList.children[3].textContent.split(': ')[1]) + 1}`;
+      }
+      // TODO: Add actual Photon API call here
+    }
+  </script>
+
+  <!-- WebSocket Integration: Python -> Website -> Photon -->
+  <script>
+    const ws = new WebSocket(`ws://${window.location.host}/ws`);
+
+    ws.onopen = () => {
+      console.log("Connected to Python WebSocket");
+    };
+
+    ws.onmessage = (event) => {
+      const command = event.data;
+      console.log("Received command from Python:", command);
+      sendPhotonCommand(command);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    // Optional: send messages from website to Python
+    function sendToPython(message) {
+      ws.send(message);
+    }
+  </script>
+
+</body>
+</html>
