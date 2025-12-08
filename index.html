@@ -3,116 +3,120 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Study Sergeant Dashboard</title>
+  <title>Study Sergeant</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-slate-100 min-h-screen flex flex-col">
 
-  <!-- Header -->
-  <header class="bg-blue-600 text-white p-6 shadow-md">
-    <h1 class="text-3xl font-bold text-center">Study Sergeant Dashboard</h1>
-  </header>
+  <nav class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm shrink-0">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
+      <h1 class="text-xl font-bold text-slate-800">Study Sergeant</h1>
+    </div>
+    <div id="statusBadge" class="px-4 py-1.5 rounded-full text-sm font-semibold bg-gray-100 text-gray-600 border border-gray-200">
+      Waiting...
+    </div>
+  </nav>
 
-  <!-- Main container -->
-  <main class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+  <main class="flex-grow container mx-auto px-4 py-6 max-w-5xl flex flex-col gap-6">
 
-    <!-- Camera & Study Controls -->
-    <section class="bg-white p-6 rounded-lg shadow">
-      <h2 class="text-xl font-semibold mb-4">Live Camera</h2>
-      <video id="cameraFeed" autoplay playsinline class="w-full rounded-lg border border-gray-300"></video>
-      <div class="mt-4 flex gap-4">
-        <button id="startSession" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Start Study Session</button>
-        <button id="stopSession" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Stop Session</button>
+    <!-- CAMERA -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-200">
+      <div class="relative bg-black w-full aspect-video flex items-center justify-center">
+        <img src="{{ url_for('video_feed') }}" class="absolute inset-0 w-full h-full object-contain" alt="Loading...">
       </div>
-    </section>
-
-    <!-- Photon Control Panel -->
-    <section class="bg-white p-6 rounded-lg shadow">
-      <h2 class="text-xl font-semibold mb-4">Photon Feedback</h2>
-      <p class="mb-2 text-gray-700">Send a command to the Photon:</p>
-      <div class="flex gap-4 mb-4">
-        <button onclick="sendPhotonCommand('encourage')" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Encourage</button>
-        <button onclick="sendPhotonCommand('scold')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Scold</button>
-        <button onclick="sendPhotonCommand('neutral')" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Neutral</button>
+      <div class="p-4 bg-white border-t border-slate-100 grid grid-cols-3 gap-3">
+          <button id="btnContinue" class="bg-emerald-500 text-white font-bold py-3 rounded-lg hover:bg-emerald-600 transition">▶ Resume</button>
+          <button id="btnNew" class="bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition">🔄 New Session</button>
+          <button id="btnStop" class="bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600 transition">⏹ Stop</button>
       </div>
+    </div>
 
-      <h2 class="text-xl font-semibold mb-4">Session Stats</h2>
-      <ul id="sessionStats" class="text-gray-700">
-        <li>Time Focused: 0 min</li>
-        <li>Time Distracted: 0 min</li>
-        <li>Encouragements Sent: 0</li>
-        <li>Scolds Sent: 0</li>
-      </ul>
-    </section>
+    <!-- STATS (3 Main Categories) -->
+    <div class="grid grid-cols-3 gap-4">
+        <!-- Studying Card -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+          <span class="text-3xl">📚</span>
+          <div class="text-sm font-bold text-slate-400 mt-2 tracking-wide">STUDYING</div>
+          <div id="valStudy" class="text-3xl font-bold text-emerald-600 mt-1">0s</div>
+        </div>
+
+        <!-- Phone Card -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+          <span class="text-3xl">📱</span>
+          <div class="text-sm font-bold text-slate-400 mt-2 tracking-wide">PHONE</div>
+          <div id="valPhone" class="text-3xl font-bold text-red-600 mt-1">0s</div>
+        </div>
+
+        <!-- Distracted Card -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+          <span class="text-3xl">👀</span>
+          <div class="text-sm font-bold text-slate-400 mt-2 tracking-wide">DISTRACTED</div>
+          <div id="valDistracted" class="text-3xl font-bold text-orange-500 mt-1">0s</div>
+        </div>
+    </div>
+
+    <!-- Details Section (Smaller) -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center px-6 text-sm">
+        <span class="text-slate-400 font-semibold uppercase tracking-wider">Details</span>
+        <div class="flex gap-6">
+            <span>Hands: <strong id="valHands" class="text-slate-400">No</strong></span>
+            <span>Slouch Time: <strong id="valSlouch" class="text-slate-700">0s</strong></span>
+        </div>
+    </div>
 
   </main>
 
-  <!-- Footer -->
-  <footer class="bg-gray-200 text-gray-700 p-4 text-center">
-    © 2025 Study Sergeant
-  </footer>
-
-  <!-- JavaScript: Camera & Button Logic -->
   <script>
-    const video = document.getElementById('cameraFeed');
-    const startBtn = document.getElementById('startSession');
-    const stopBtn = document.getElementById('stopSession');
+    const btnContinue = document.getElementById('btnContinue');
+    const btnNew = document.getElementById('btnNew');
+    const btnStop = document.getElementById('btnStop');
+    const statusBadge = document.getElementById('statusBadge');
 
-    let stream;
+    btnContinue.addEventListener('click', () => fetch('/continue_session', {method: 'POST'}));
+    btnNew.addEventListener('click', () => { if(confirm("Start New Session?")) fetch('/new_session', {method: 'POST'}); });
+    btnStop.addEventListener('click', () => fetch('/stop_session', {method: 'POST'}));
 
-    // Start camera
-    startBtn.addEventListener('click', async () => {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-      video.srcObject = stream;
-      console.log("Study session started.");
-    });
+    setInterval(() => {
+        fetch('/get_stats').then(r => r.json()).then(data => {
+            if (data.status !== "Idle") {
+                statusBadge.textContent = data.status;
+                
+                // Dynamic Status Colors
+                if(data.status === "Studying") {
+                    statusBadge.className = "px-4 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700 border border-green-200";
+                }
+                else if(data.status === "On Phone") {
+                    statusBadge.className = "px-4 py-1 rounded-full text-sm font-bold bg-red-100 text-red-700 border border-red-200";
+                }
+                else if(data.status === "Distracted") {
+                    statusBadge.className = "px-4 py-1 rounded-full text-sm font-bold bg-orange-100 text-orange-700 border border-orange-200";
+                }
+                else {
+                    statusBadge.className = "px-4 py-1 rounded-full text-sm font-bold bg-slate-100 text-slate-700 border border-slate-200";
+                }
+            }
 
-    // Stop camera
-    stopBtn.addEventListener('click', () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-      video.srcObject = null;
-      console.log("Study session stopped.");
-    });
-
-    // Photon command (manual buttons)
-    function sendPhotonCommand(command) {
-      console.log(`Photon command executed: ${command}`);
-      const statsList = document.getElementById('sessionStats');
-
-      if (command === 'encourage') {
-        statsList.children[2].textContent = `Encouragements Sent: ${parseInt(statsList.children[2].textContent.split(': ')[1]) + 1}`;
-      } else if (command === 'scold') {
-        statsList.children[3].textContent = `Scolds Sent: ${parseInt(statsList.children[3].textContent.split(': ')[1]) + 1}`;
-      }
-      // TODO: Add actual Photon API call here
-    }
+            // Update Values
+            document.getElementById('valStudy').textContent = Math.floor(data.study_time) + "s";
+            document.getElementById('valPhone').textContent = Math.floor(data.phone_time) + "s";
+            
+            // Distracted is the "catch-all" bucket
+            document.getElementById('valDistracted').textContent = Math.floor(data.distracted_time) + "s";
+            
+            // Details
+            document.getElementById('valSlouch').textContent = Math.floor(data.slouch_time) + "s";
+            
+            const handsEl = document.getElementById('valHands');
+            if (data.hands_detected) {
+                handsEl.textContent = "Active"; handsEl.className = "text-emerald-500 font-bold";
+            } else {
+                handsEl.textContent = "No"; handsEl.className = "text-slate-400 font-bold";
+            }
+        });
+    }, 200);
   </script>
-
-  <!-- WebSocket Integration: Python -> Website -> Photon -->
-  <script>
-    const ws = new WebSocket(`ws://${window.location.host}/ws`);
-
-    ws.onopen = () => {
-      console.log("Connected to Python WebSocket");
-    };
-
-    ws.onmessage = (event) => {
-      const command = event.data;
-      console.log("Received command from Python:", command);
-      sendPhotonCommand(command);
-    };
-
-    ws.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
-
-    // Optional: send messages from website to Python
-    function sendToPython(message) {
-      ws.send(message);
-    }
-  </script>
-
 </body>
 </html>
