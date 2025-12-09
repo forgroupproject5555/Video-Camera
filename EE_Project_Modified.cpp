@@ -16,7 +16,7 @@
 #define AIO_SERVER      "io.adafruit.com"
 #define AIO_SERVERPORT  1883                   
 #define AIO_USERNAME    "groupproject5555"
-#define AIO_KEY         "aio_PHxo83cpnPXG4vmGlN62BKdmNu4O"
+#define AIO_KEY         "aio_WBHy59QVm16gFRQDsqVNFTRkvbsL"
 
 // Global Objects
 TCPClient TheClient;
